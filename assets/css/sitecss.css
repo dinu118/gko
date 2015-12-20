@@ -1,0 +1,19 @@
+#login_widget{
+  margin-top:5%;
+}
+
+body{
+  overflow-x: hidden;
+}
+
+#send_sms_row{
+  margin-top:5%;
+}
+
+.errors{
+  color:red;
+}
+
+.form-control{
+  margin:10px;
+}
