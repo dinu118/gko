@@ -23,10 +23,10 @@ class Main extends CI_Controller {
 
 	public function __construct()
 	{
+
 		parent::__construct();
 		date_default_timezone_set("Asia/Kolkata");
 		$this->load->model("Model_users");
-		
 		if($this->session->userdata("email")){
 			$this->user_data = $this->Model_users->user_data($this->session->userdata("email"));
 		}else{
@@ -35,14 +35,13 @@ class Main extends CI_Controller {
 	}
 
 	public function index()
-	{	
+	{
     if(empty($this->session->userdata('email'))===true)
 		$this->load->view('home');
 		else {
 			$this->dashboard();
 		}
 	}
-	
 /*--------------------------------------------------------------------------------
          THIS FUNCTION LOADS THE DASHBOARD
 --------------------------------------------------------------------------------*/
@@ -90,9 +89,9 @@ class Main extends CI_Controller {
 
 
 		echo $result;
-		}else{
-			$this->dashboard();
-			}
+	}else{
+		$this->dashboard();
+	}
 	}
 /*-----------------------------------------------------------------------------
 						LOGIN VALIDATIION
@@ -110,8 +109,8 @@ class Main extends CI_Controller {
 				);
 
 				$this->session->set_userdata($data);
-				redirect(base_url()."index.php/Main/dashboard");
-			}else{ 
+				$this->dashboard();
+			}else{
 				$this->index();
 			}
 		}else{
@@ -119,107 +118,23 @@ class Main extends CI_Controller {
 		}
 	}
 /*------------------------------------------------------------------------------
-	VALIDATE THE CREDENTIALS GIVEN BY THE USER ON LOGIN SCREEN
+						VALIDATE THE CREDENTIALS GIVEN BY THE USER ON LOGIN SCREEN
 ------------------------------------------------------------------------------*/
 	public function validate_credentials(){
 		$this->load->model("model_users");
-		$str=$this->model_users->can_log_in();
-		if($str === "true"){
+		if($this->model_users->can_log_in() === true){
 			return true;
 		}else{
-			$this->form_validation->set_message("validate_credentials",$str);
+			$this->form_validation->set_message("validate_credentials","Incorrect username/password");
 			return false;
 		}
 	}
-/*-----------------------------------------------------------------------------
-						REGISTER VALIDATIION
-------------------------------------------------------------------------------*/
-	public function register_validation(){
-		$this->form_validation->set_rules("register_email","Email","required|valid_email|trim|is_unique[users.email]");
-		$this->form_validation->set_rules("register_password","Password","required|trim|min_length[8]|matches[confirm_register_password]");
-		$this->form_validation->set_rules("confirm_register_password","Confirm Password","required|trim");
-		$this->form_validation->set_rules("first_name","First name","required|trim");
-		$this->form_validation->set_rules("last_name","Last name","required|trim");
-		$this->form_validation->set_rules("contact","Contact Number","required|trim|regex_match[/^[0-9().+\\s]+$/]");
-		
-		$this->form_validation->set_message("is_unique","Email already registered.You can continue to login.");
-		$this->form_validation->set_message("matches","Passwords don't match.");
-		$this->form_validation->set_message("min_length","Password must contain atleast 8 characters.");
-		$this->form_validation->set_message("regex_match","Please enter a valid contact number.");
-
-		if($this->form_validation->run()){
-			$this->form_validation->set_rules("last_name","Last name","callback_check_name");
-			if($this->form_validation->run()){
-				$key=md5(''.uniqid().time().$this->input->post('register_email'));
-				if($this->send_mail($key)===true)
-				{	$this->load->model("model_users");
-					if($this->model_users->register_user($key))
-						redirect(base_url()."index.php/Main/index?success");
-					else{
-						$this->form_validation->set_message("unsuccessful","Registration can't be completed right now.<br/>
-															Please try again later.");
-						}
-					}
-				}
-			
-			$this->index();
-			}else{
-				$this->index();
-			}
-		}
-/*-----------------------------------------------------------------------------
-			VALIDATE REGISTRATION DATA PROVIDED BY THE USER
-------------------------------------------------------------------------------*/
-	
-public function check_name(){	
-	$name=$this->input->post("last_name");
-	if(preg_match("/\\s/",$name)==true)
-	{	$this->form_validation->set_message("check_name","Last name must not contain any blank spaces.");
-		return false;
-		}else{
-			return true;
-		}
-	}
-
-public function send_mail($key){
-	$this->load->library('email',array('mailtype'=>'html'));
-
-	$this->email->from("testing@webmail.com");
-	$this->email->to($this->input->post('register_email'));
-	$this->email->subject("Confirm your account .");
-	$adr=base_url()."index.php/Main/activate?key=".$key;
-	$message="<br/>Hi ".$this->input->post("first_name")." ".$this->input->post("last_name")." ,<br/>".
-				"Your account has been registered successfully.<br/>To continue with login, <br/>Kindly activate your account". 
-				" by clicking the link below or pasting it in your url bar.<br/><br/>".
-				"<a href='".$adr."'>".$adr."</a><br/><br/>";
-	
-	$this->email->message($message);
-	if($this->email->send()===true)
-		return true;
-	else
-	{	$this->form_validation->set_message("sent_fail","Confirmation email can't be sent to your account right now.
-											<br/>Please try again later.");
-		return false;
-		}
-}
-
 public function logout(){
 	$this->session->sess_destroy();
-	redirect(base_url());
+	$this->load->view("home");
 }
 
-public function activate()
-{	if(!isset($_GET['key'])||empty($_GET['key']))
-		redirect(base_url());
-	$key=$_GET['key'];
-	$this->load->model("model_users");
-	if($this->model_users->activate($key))
-		redirect(base_url()."?active");
-	else
-		redirect(base_url()."?error");
-	}
-  /*----------------------------------------------------------------------------
+	/*----------------------------------------------------------------------------
 					END OF THE MAIN controller
   ------------------------------------------------------------------------------*/
 }
-?>

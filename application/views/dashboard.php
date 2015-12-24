@@ -4,7 +4,7 @@ include "includes/header.php";
 ?>
 <div class="row">
   <div class="col-sm-11"></div>
-  <div class="col-sm-1" style="padding:5px;"><a  href="<?php echo base_url(); ?>index.php/Main/logout"><button class="btn btn-danger" >Logout</button></a></div>
+  <div class="col-sm-1" style="padding:5px;"><a  href="<?php echo base_url(); ?>main/logout"><button class="btn btn-danger" >Logout</button></a></div>
 </div>
 <div class="row" id="send_sms_row">
 
